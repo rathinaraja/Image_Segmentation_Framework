@@ -1,0 +1,39 @@
+model:
+  name: attention_unet
+  n_channels: 3
+  n_classes: 2
+
+dataset:
+  images_dir: /data_64T_3/Raja/Alex_project/dataset/patches
+  masks_dir: /data_64T_3/Raja/Alex_project/dataset/masks
+  img_size: [512, 512]
+  num_workers: 4
+  augment: true              # utils/autmentations.py Resize → Random flips → Rotation → Crop → Color jitter → Blur → Normalize
+  val_split: 0.1             # Used only in single fold + train_val_test mode
+  test_split: 0.2            # Holdout test set fraction (both modes)
+
+training:
+  fold_mode: single           # Options: single | kfold
+  n_folds: 5                  # Used only when fold_mode: kfold
+  eval_mode: train_val        # Options: train_val_test | train_val | train_test | training_only
+  epochs: 1 
+  batch_size: 2
+  learning_rate: 1.0e-4
+  weight_decay: 1.0e-5
+  amp: true
+  early_stopping_patience: 15
+  loss: dice_ce                 # Options: cross_entropy | dice | dice_ce
+
+optimizer:
+  name: adam
+  momentum: 0.9
+
+scheduler:
+  name: cosine
+  step_size: 30
+  gamma: 0.1
+  min_lr: 1.0e-6
+
+logging:
+  log_dir: logs/attention_unet_dataset    # datetime/fold subdirs created automatically
+  log_interval: 10

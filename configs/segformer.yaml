@@ -1,0 +1,61 @@
+model:
+  name: segformer
+  n_channels: 3
+  n_classes: 2
+
+  # MiT-B0 (default — fast, ~3.8M params)
+  embed_dims:  [32, 64, 160, 256]
+  num_heads:   [1,  2,  5,   8]
+  mlp_ratios:  [4,  4,  4,   4]
+  depths:      [2,  2,  2,   2]
+  sr_ratios:   [8,  4,  2,   1]
+  decoder_dim: 256
+  drop_rate:   0.0
+  attn_drop:   0.0
+  drop_path:   0.1
+
+  # ── Larger variants (uncomment to use) ────────────────────────────
+  # MiT-B1 (~13.7M params)
+  # embed_dims:  [64, 128, 320, 512]
+  # depths:      [2,  2,   2,   2]
+
+  # MiT-B2 (~27.5M params)
+  # embed_dims:  [64, 128, 320, 512]
+  # depths:      [3,  4,   6,   3]
+  # num_heads:   [1,  2,   5,   8]
+  # sr_ratios:   [8,  4,   2,   1]
+
+dataset:
+  images_dir: /data_64T_3/Raja/Alex_project/dataset/patches
+  masks_dir: /data_64T_3/Raja/Alex_project/dataset/masks
+  img_size: [512, 512]    # SegFormer works at any resolution
+  num_workers: 4
+  augment: true            # utils/autmentations.py Resize → Random flips → Rotation → Crop → Color jitter → Blur → Normalize
+  val_split: 0.1           # Used only in single fold + train_val_test mode
+  test_split: 0.2          # Holdout test set fraction (both modes)
+
+training:
+  fold_mode: single         # Options: single | kfold
+  n_folds: 5                 # Used only when fold_mode: kfold
+  eval_mode: train_val_test  # Options: train_val_test | train_val | train_test | training_only
+  epochs: 1
+  batch_size: 4           # lighter than SwinUNet/TransUNet
+  learning_rate: 6.0e-5   # AdamW with lower LR for transformer
+  weight_decay: 1.0e-2    # stronger weight decay for transformer
+  amp: true
+  early_stopping_patience: 15
+  loss: dice_ce            # Options: cross_entropy | dice | dice_ce
+
+optimizer:
+  name: adamw
+  momentum: 0.9
+
+scheduler:
+  name: cosine
+  step_size: 30
+  gamma: 0.1
+  min_lr: 1.0e-6
+
+logging:
+  log_dir: logs/segformer_dataset   # datetime/fold subdirs created automatically
+  log_interval: 10
